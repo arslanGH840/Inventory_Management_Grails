@@ -64,7 +64,6 @@ dependencies {
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.apache.grails:grails-testing-support-web"
     implementation 'org.apache.grails:grails-spring-security:7.0.2'
-    implementation 'me.paulschwarz:spring-dotenv:5.1.0'
     runtimeOnly "com.microsoft.sqlserver:mssql-jdbc"
 }
 

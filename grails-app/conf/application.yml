@@ -8,7 +8,9 @@ grails:
     codegen:
         defaultPackage: grailsproject
     profile: web
-
+spring:
+    config:
+        import: "optional:file:.env[.properties]"
 ---
 grails:
     mime:

@@ -62,3 +62,20 @@ class SupplierServiceSpec extends Specification {
         supplierService.save(newValidSupplier("save")) != null
     }
 }
+void "delete is blocked with supplier.delete.hasTransactions when referenced by a stock transaction"() {
+    given:
+    Product product = new Product(name: 'Ref Product', sku: "SKU-${UUID.randomUUID()}", unitPrice: 1.0, reorderThreshold: 1, active: true)
+            .save(flush: true, failOnError: true)
+    Supplier supplier = new Supplier(name: 'Ref Supplier', contactEmail: 'ref@example.com', phone: '123', active: true)
+            .save(flush: true, failOnError: true)
+    new StockTransaction(product: product, supplier: supplier, quantity: 5, transactionType: 'IN', transactionDate: new Date())
+            .save(flush: true, failOnError: true)
+
+    when:
+    supplierService.delete(supplier.id)
+
+    then:
+    BusinessException e = thrown(BusinessException)
+    e.code == 'supplier.delete.hasTransactions'
+    Supplier.get(supplier.id) != null
+}

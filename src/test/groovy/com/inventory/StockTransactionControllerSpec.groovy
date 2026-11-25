@@ -1,5 +1,6 @@
 package com.inventory
 
+import com.inventory.admin.StockTransactionController
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.validation.ValidationException

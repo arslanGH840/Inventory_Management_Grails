@@ -1,8 +1,13 @@
-package com.inventory
+package com.inventory.admin
 
+import com.inventory.BusinessException
+import com.inventory.Supplier
+import com.inventory.SupplierService
+import grails.plugin.springsecurity.annotation.Secured
 import grails.validation.ValidationException
 import static org.springframework.http.HttpStatus.*
 
+@Secured(['ROLE_ADMIN'])
 class SupplierController {
 
     SupplierService supplierService
@@ -11,7 +16,7 @@ class SupplierController {
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond supplierService.list(params), model:[supplierCount: supplierService.count()]
+        respond supplierService.list(params), model: [supplierCount: supplierService.count()]
     }
 
     def show(Long id) {
@@ -27,14 +32,12 @@ class SupplierController {
             notFound()
             return
         }
-
         try {
             supplierService.save(supplier)
         } catch (ValidationException e) {
-            respond supplier.errors, view:'create'
+            respond supplier.errors, view: 'create'
             return
         }
-
         request.withFormat {
             form multipartForm {
                 flash.message = message(code: 'default.created.message', args: [message(code: 'supplier.label', default: 'Supplier'), supplier.id])
@@ -53,20 +56,18 @@ class SupplierController {
             notFound()
             return
         }
-
         try {
             supplierService.save(supplier)
         } catch (ValidationException e) {
-            respond supplier.errors, view:'edit'
+            respond supplier.errors, view: 'edit'
             return
         }
-
         request.withFormat {
             form multipartForm {
                 flash.message = message(code: 'default.updated.message', args: [message(code: 'supplier.label', default: 'Supplier'), supplier.id])
                 redirect supplier
             }
-            '*'{ respond supplier, [status: OK] }
+            '*' { respond supplier, [status: OK] }
         }
     }
 
@@ -75,15 +76,19 @@ class SupplierController {
             notFound()
             return
         }
-
-        supplierService.delete(id)
-
+        try {
+            supplierService.delete(id)
+        } catch (BusinessException e) {
+            flash.message = message(code: e.code)
+            redirect action: "index", method: "GET"
+            return
+        }
         request.withFormat {
             form multipartForm {
                 flash.message = message(code: 'default.deleted.message', args: [message(code: 'supplier.label', default: 'Supplier'), id])
-                redirect action:"index", method:"GET"
+                redirect action: "index", method: "GET"
             }
-            '*'{ render status: NO_CONTENT }
+            '*' { render status: NO_CONTENT }
         }
     }
 
@@ -93,7 +98,7 @@ class SupplierController {
                 flash.message = message(code: 'default.not.found.message', args: [message(code: 'supplier.label', default: 'Supplier'), params.id])
                 redirect action: "index", method: "GET"
             }
-            '*'{ render status: NOT_FOUND }
+            '*' { render status: NOT_FOUND }
         }
     }
 }
