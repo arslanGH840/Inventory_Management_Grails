@@ -1,0 +1,44 @@
+# Build output & Grails/Gradle artifacts
+build/
+out/
+.gradle/
+.asset-cache/
+.grails/
+bin/
+*.log
+
+# IDE & editor files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+nbproject/
+*.swp
+*.swo
+*~
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Secrets, local overrides & DB dumps
+.env
+application-local.*
+grails-app/conf/application-local.*
+*.bak
+*.mdf
+*.ldf
+
+# Node / frontend tooling (if used)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
