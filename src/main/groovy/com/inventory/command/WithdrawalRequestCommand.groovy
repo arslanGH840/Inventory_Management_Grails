@@ -11,7 +11,7 @@ class WithdrawalRequestCommand implements Validateable {
         productId nullable: false, validator: { val ->
             Product.get(val)?.active ? true : 'withdrawal.product.notfound'
         }
-        quantity min: 1, validator: { val ->
+        quantity validator: { val ->
             (val != null && val > 0) ? true : 'withdrawal.quantity.invalid'
         }
     }

@@ -6,12 +6,29 @@
 </head>
 <body>
 <g:form controller="stockTransaction" action="index" method="GET" class="filter-form">
-    <g:select name="productId" from="${products}" optionKey="id" optionValue="name" noSelection="['':'All products']" value="${params.productId}"/>
-    <g:select name="supplierId" from="${suppliers}" optionKey="id" optionValue="name" noSelection="['':'All suppliers']" value="${params.supplierId}"/>
-    <g:select name="type" from="${['IN', 'OUT']}" noSelection="['':'All types']" value="${params.type}"/>
-    <g:field type="date" name="fromDate" value="${params.fromDate}"/>
-    <g:field type="date" name="toDate" value="${params.toDate}"/>
-    <button class="btn btn-primary btn-sm" type="submit"><g:message code="action.filter" default="Filter"/></button>
+    <div class="filter-field">
+        <label class="filter-label" for="productId"><g:message code="product.label" default="Product"/></label>
+        <g:select class="form-select" id="productId" name="productId" from="${products}" optionKey="id" optionValue="name" noSelection="['':'All products']" value="${params.productId}"/>
+    </div>
+    <div class="filter-field">
+        <label class="filter-label" for="supplierId"><g:message code="supplier.label" default="Supplier"/></label>
+        <g:select class="form-select" id="supplierId" name="supplierId" from="${suppliers}" optionKey="id" optionValue="name" noSelection="['':'All suppliers']" value="${params.supplierId}"/>
+    </div>
+    <div class="filter-field">
+        <label class="filter-label" for="type"><g:message code="stockTransaction.transactionType" default="Type"/></label>
+        <g:select class="form-select" id="type" name="type" from="${['IN', 'OUT']}" noSelection="['':'All types']" value="${params.type}"/>
+    </div>
+    <div class="filter-field">
+        <label class="filter-label" for="fromDate">From</label>
+        <g:field class="form-control" type="date" id="fromDate" name="fromDate" value="${params.fromDate}"/>
+    </div>
+    <div class="filter-field">
+        <label class="filter-label" for="toDate">To</label>
+        <g:field class="form-control" type="date" id="toDate" name="toDate" value="${params.toDate}"/>
+    </div>
+    <div class="filter-field filter-field-submit">
+        <button class="btn btn-primary btn-sm" type="submit"><g:message code="action.filter" default="Filter"/></button>
+    </div>
 </g:form>
 
 <table class="admin-table">

@@ -36,15 +36,43 @@ class WithdrawalRequestService {
         ).save(failOnError: true, flush: true)
     }
 
+    // A rejected request may be resubmitted exactly once. The resubmission
+    // is a brand-new PENDING request linked via resubmittedFrom; if THAT
+    // one is also rejected, no further resubmission is allowed — the user
+    // must contact an Admin directly (Technical PRD §2.6.6).
+    Map resubmit(Long requestId, User user) {
+        WithdrawalRequest original = WithdrawalRequest.get(requestId)
+        if (!original || original.requestedBy?.id != user.id) {
+            return [success: false, code: 'default.not.found.message']
+        }
+        if (original.status != 'REJECTED') {
+            return [success: false, code: 'withdrawal.resubmit.notRejected']
+        }
+        if (original.resubmittedFrom != null) {
+            // `original` is itself already a resubmission that was rejected again.
+            return [success: false, code: 'withdrawal.resubmit.notAllowed']
+        }
+        if (WithdrawalRequest.countByResubmittedFrom(original) > 0) {
+            return [success: false, code: 'withdrawal.resubmit.alreadyResubmitted']
+        }
+
+        WithdrawalRequest resubmission = new WithdrawalRequest(
+                product: original.product,
+                requestedBy: user,
+                quantity: original.quantity,
+                status: 'PENDING',
+                resubmittedFrom: original
+        ).save(failOnError: true, flush: true)
+
+        [success: true, request: resubmission]
+    }
+
     Map decide(WithdrawalDecisionCommand cmd, User admin) {
         cmd.decision == 'APPROVE' ? approve(cmd, admin) : reject(cmd, admin)
     }
 
-    // Available stock is re-checked at approval time, inside the same
-    // locked transaction as the deduction — never trusted from the time
-    // the request was submitted (Technical PRD §1, "Stock safety rule").
     private Map approve(WithdrawalDecisionCommand cmd, User admin) {
-        WithdrawalRequest request = WithdrawalRequest.lock(cmd.requestId) // pessimistic row lock
+        WithdrawalRequest request = WithdrawalRequest.lock(cmd.requestId)
         if (!request) return [success: false, code: 'default.not.found.message']
         if (request.status != 'PENDING') return [success: false, code: 'withdrawal.already.decided']
 

@@ -16,7 +16,7 @@ class RestockCommand implements Validateable {
         supplierId nullable: false, validator: { val ->
             Supplier.get(val) ? true : 'restock.supplier.notfound'
         }
-        quantity min: 1, validator: { val ->
+        quantity validator: { val ->
             (val != null && val > 0) ? true : 'restock.quantity.invalid'
         }
     }

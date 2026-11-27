@@ -9,9 +9,11 @@ class SupplierCommand implements Validateable {
     String phone
 
     static constraints = {
+        id nullable: true
         name blank: false
-        contactEmail blank: false, email: true, validator: { val ->
-            val ? true : 'supplier.email.invalid'
+        contactEmail validator: { val ->
+            if (!val || !val.trim()) return 'supplier.email.invalid'
+            val ==~ /^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$/ ? true : 'supplier.email.invalid'
         }
         phone blank: false
     }

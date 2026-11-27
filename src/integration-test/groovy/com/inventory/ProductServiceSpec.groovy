@@ -55,7 +55,8 @@ class ProductServiceSpec extends Specification {
         Product.withSession { it.flush() }
 
         then:
-        Product.count() == 0
+        Product.count() == 1
+        !Product.get(id).active
     }
 
     void "test save"() {

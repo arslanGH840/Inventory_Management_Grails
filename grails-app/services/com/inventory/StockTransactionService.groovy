@@ -10,6 +10,10 @@ class StockTransactionService {
         StockTransaction.get(id)
     }
 
+    Long count() {
+        StockTransaction.count()
+    }
+
     // Filterable, paginated transaction history. `filters` may carry
     // productId, supplierId, type ('IN'/'OUT'), fromDate, toDate — any
     // combination applies together (Technical PRD §2.4).

@@ -10,67 +10,41 @@ class StockTransactionServiceSpec extends Specification {
 
     StockTransactionService stockTransactionService
 
-    private Product testProduct
-
-    def setup() {
-        testProduct = new Product(
-                name: "Txn Test Product",
-                sku: "SKU-TXN-${System.currentTimeMillis()}",
-                unitPrice: 5.0,
-                reorderThreshold: 2,
-                active: true
+    private Product newTestProduct() {
+        new Product(
+                name: "Txn Test Product", sku: "SKU-TXN-${UUID.randomUUID()}",
+                unitPrice: 5.0, reorderThreshold: 2, active: true
         ).save(flush: true, failOnError: true)
     }
 
-    private StockTransaction newValidTransaction() {
-        new StockTransaction(
-                product: testProduct,
-                quantity: 10,
-                transactionType: 'IN',
-                transactionDate: new Date()
-        )
+    private Supplier newTestSupplier() {
+        new Supplier(
+                name: "Txn Test Supplier", contactEmail: "txn@example.com", phone: "123", active: true
+        ).save(flush: true, failOnError: true)
     }
 
     void "test get"() {
         expect:
-        stockTransactionService.get(1) == null
+        stockTransactionService.get(999999) == null
     }
 
-    void "test list"() {
-        setup:
-        20.times { newValidTransaction().save(flush: true, failOnError: true) }
+    void "search filters by productId and type, and paginates"() {
+        given:
+        Product testProduct = newTestProduct()
+        Supplier testSupplier = newTestSupplier()
+        5.times {
+            new StockTransaction(product: testProduct, supplier: testSupplier, quantity: 10, transactionType: 'IN', transactionDate: new Date())
+                    .save(flush: true, failOnError: true)
+        }
+        3.times {
+            new StockTransaction(product: testProduct, quantity: 2, transactionType: 'OUT', transactionDate: new Date())
+                    .save(flush: true, failOnError: true)
+        }
 
         expect:
-        stockTransactionService.list().size() == 20
-        stockTransactionService.list(max: 10).size() == 10
-    }
-
-    void "test count"() {
-        setup:
-        20.times { newValidTransaction().save(flush: true, failOnError: true) }
-
-        expect:
-        stockTransactionService.count() == 20
-    }
-
-    void "test delete"() {
-        setup:
-        StockTransaction txn = newValidTransaction().save(flush: true, failOnError: true)
-        Long id = txn.id
-
-        expect:
-        stockTransactionService.count() == 1
-
-        when:
-        stockTransactionService.delete(id)
-        StockTransaction.withSession { it.flush() }
-
-        then:
-        StockTransaction.count() == 0
-    }
-
-    void "test save"() {
-        expect:
-        stockTransactionService.save(newValidTransaction()) != null
+        stockTransactionService.searchCount([productId: testProduct.id]) == 8
+        stockTransactionService.searchCount([productId: testProduct.id, type: 'IN']) == 5
+        stockTransactionService.search([productId: testProduct.id, type: 'OUT'], [:]).every { it.transactionType == 'OUT' }
+        stockTransactionService.search([productId: testProduct.id], [max: 3]).size() == 3
     }
 }

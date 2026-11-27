@@ -75,4 +75,53 @@ class WithdrawalRequestServiceSpec extends Specification {
         !result.success
         result.code == 'withdrawal.already.decided'
     }
+    void "a rejected request can be resubmitted exactly once, and a second rejection blocks further resubmission"() {
+        given:
+        Product product = productWithStock(10)
+        User user = aUser('user')
+        WithdrawalRequest original = new WithdrawalRequest(product: product, requestedBy: user, quantity: 3, status: 'PENDING')
+                .save(flush: true, failOnError: true)
+
+        when: "the original request is rejected"
+        Map rejectResult = withdrawalRequestService.decide(
+                new WithdrawalDecisionCommand(requestId: original.id, decision: 'REJECT', rejectionReason: 'Not needed'),
+                aUser('admin')
+        )
+
+        then:
+        rejectResult.success
+        WithdrawalRequest.get(original.id).status == 'REJECTED'
+
+        when: "the user resubmits it"
+        Map resubmitResult = withdrawalRequestService.resubmit(original.id, user)
+
+        then:
+        resubmitResult.success
+        WithdrawalRequest resubmission = resubmitResult.request
+        resubmission.resubmittedFrom.id == original.id
+        resubmission.status == 'PENDING'
+
+        when: "the user tries to resubmit the SAME original request again"
+        Map secondAttempt = withdrawalRequestService.resubmit(original.id, user)
+
+        then: "refused — one resubmission per rejected request"
+        !secondAttempt.success
+        secondAttempt.code == 'withdrawal.resubmit.alreadyResubmitted'
+
+        when: "the resubmission is ALSO rejected"
+        Map secondRejectResult = withdrawalRequestService.decide(
+                new WithdrawalDecisionCommand(requestId: resubmission.id, decision: 'REJECT', rejectionReason: 'Still not needed'),
+                aUser('admin')
+        )
+
+        then:
+        secondRejectResult.success
+
+        when: "the user tries to resubmit the second-generation rejected request"
+        Map blocked = withdrawalRequestService.resubmit(resubmission.id, user)
+
+        then: "blocked — must contact an admin directly"
+        !blocked.success
+        blocked.code == 'withdrawal.resubmit.notAllowed'
+    }
 }

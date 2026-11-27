@@ -11,12 +11,13 @@ class ProductCommand implements Validateable {
     Integer reorderThreshold
 
     static constraints = {
+        id nullable: true
         name blank: false
         sku blank: false, validator: { val, obj ->
             def existing = Product.findBySku(val)
             (existing && existing.id != obj.id) ? 'product.sku.duplicate' : true
         }
-        unitPrice min: 0.0, validator: { val ->
+        unitPrice validator: { val ->
             (val != null && val >= 0) ? true : 'product.unitPrice.invalid'
         }
         reorderThreshold min: 0

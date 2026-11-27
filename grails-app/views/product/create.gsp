@@ -22,10 +22,10 @@
             </g:eachError>
         </ul>
     </g:hasErrors>
-
     <g:form resource="${this.product}" controller="${controllerName}" method="POST">
         <fieldset>
             <f:all bean="product" class="form-row"
+                   except="lastRestockedDate"
                    requiredClass="required"
                    labelClass="col-label form-label"
                    divClass="col-value"
@@ -33,6 +33,16 @@
                    widget-invalidClass="is-invalid"
                    widget-selectDateClass="form-select"
                    widget-checkBoxClass="form-check-input align-middle"/>
+
+            <div class="form-row">
+                <label class="col-label form-label" for="lastRestockedDate">
+                    <g:message code="product.lastRestockedDate.label" default="Last Restocked Date"/>
+                </label>
+                <div class="col-value">
+                    <g:field type="date" class="form-control" id="lastRestockedDate" name="lastRestockedDate"
+                             value="${product?.lastRestockedDate ? product.lastRestockedDate.format('yyyy-MM-dd') : ''}"/>
+                </div>
+            </div>
         </fieldset>
         <div class="actions">
             <button class="btn btn-primary" type="submit">
