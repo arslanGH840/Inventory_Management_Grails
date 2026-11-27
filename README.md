@@ -1,4 +1,4 @@
-# Inventory Management System
+# Inventory Management System(Not fully built system)
 
 A role-based Inventory Management System built with **Grails (Groovy)**, **GORM/Hibernate 5**, **Spring Security Core**, and **Microsoft SQL Server** (with **H2** for testing). It separates administrative and user workflows across dedicated portals, enforces stock safety inside database transactions, and routes all form inputs and error paths through command objects and `messages.properties`[cite: 1, 2, 3, 7].
 
